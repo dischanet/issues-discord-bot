@@ -42,7 +42,9 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 			let list = [], collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				for (let doc of docs) {
-					list.push(`\`${doc.id}\`  ${level[doc.level]}  ${doc.title}  by ${doc.user}`);
+					if (doc.status) {
+						list.push(`\`${doc.id}\`  ${level[doc.level]}  ${doc.title}  by ${doc.user}`);
+					}
 				}
 				message.channel.send(list.join('\n'));
 			});
@@ -59,10 +61,18 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 					user:    message.author.tag,
 					title:   msg[1],
 					level:   msg[2],
-					content: msg[3]
+					content: msg[3],
+					status:  true
 				}, (error, result) => {
-					message.channel.send((error) ? 'エラー'+error : '追加されました。' );
+					message.channel.send((error) ? 'エラー：'+error : '追加されました。');
 				});
+			});
+		});
+
+		addCommand(message, /^>完了\s([a-zA-Z0-9]{8})$/, msg => {
+			let collection = db.collection(message.channel.guild.id);
+			collection.updateOne({id:msg[1]}, {$set: {status: false}}, (err, result) => {
+				message.channel.send((error) ? 'エラー：'+error : `\`${msg[1]}\`の状態を完了にしました。`);
 			});
 		});
 	});
