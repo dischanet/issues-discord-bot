@@ -1,0 +1,28 @@
+{
+  "name": "issues-kun",
+  "version": "1.0.0",
+  "description": "アプリの問題点などをまとめることができるDiscordのBotです。",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "yuta",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuta0801/issues-kun.git"
+  },
+  "keywords": [
+    "discord",
+    "issues"
+  ],
+  "bugs": {
+    "url": "https://github.com/yuta0801/issues-kun/issues"
+  },
+  "homepage": "https://github.com/yuta0801/issues-kun#readme",
+  "dependencies": {
+    "discord.js": "^11.1.0",
+    "mongodb": "^2.2.30"
+  },
+  "devDependencies": {}
+}
