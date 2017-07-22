@@ -1,7 +1,9 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
 			mongo   = require('mongodb').MongoClient,
-			level   = ['提案', '確認', '重要', '至急'];
+			level   = ['提案', '__確認__', '**重要**', '__**至急**__'];
+
+require('date-utils');
 
 let proposals = {};
 
@@ -13,8 +15,8 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 	client.on('message', message => {
 		// 説明表示
 		addCommand(message, /^>問題くん$/, msg => {
-			message.channel.send(`
-\`>投稿 タイトル 重要度 内容\`
+			message.channel.send(
+`\`>投稿 タイトル 重要度 内容\`
 値と値の間の区切り文字は、
 スペースやタブなどの空白文字でも構いません。
 \`\`\`
@@ -22,18 +24,26 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 	スペースやタブなどの空白文字は含まないでください。
 	また2文字以上、20文字以内でお書きください。
 重要度
-	${level.join('\n\t')}
+	${(() => {
+		let list = '';
+		for (let i=0; i<level.length; i++) {
+			list += `${level[i]} -> ${i}\n\t`;
+		}
+		return list;
+	})()}
 内容
-	改行しても構いません。
+	改行や空白を入れても構いません。
 	自由にお書きください。
 \`\`\``);
 		});
 
 		// 初期設定
-		addCommand(message, /^>初期設定$/, msg => {
-			db[message.channel.guild.id].drop();
-			db.createCollection(message.channel.guild.id, () => {
-				console.log('初期化しました。');
+		addCommand(message, /^>初期化$/, msg => {
+			db.dropCollection(message.channel.guild.id, (err, result) => {
+				message.channel.send((error)?'エラー：'+error:'削除が完了しました。');
+			});
+			db.createCollection(message.channel.guild.id, (err, col) => {
+				message.channel.send((error)?'エラー：'+error:'初期設定が完了しました。');
 			});
 		});
 
@@ -42,11 +52,11 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 			let list = [], collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				for (let doc of docs) {
-					if (doc.status) {
+					if (doc.status == 'open') {
 						list.push(`\`${doc.id}\`  ${level[doc.level]}  ${doc.title}  by ${doc.user}`);
 					}
 				}
-				message.channel.send(list.join('\n'));
+				message.channel.send((list.length>0)?list.join('\n'):'まだ投稿はありません！');
 			});
 		});
 
@@ -62,17 +72,33 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 					title:   msg[1],
 					level:   msg[2],
 					content: msg[3],
-					status:  true
+					status:  'open',
+					date:    new Date()
 				}, (error, result) => {
-					message.channel.send((error) ? 'エラー：'+error : '追加されました。');
+					message.channel.send((error)?'エラー：'+error:'投稿しました。');
 				});
+			});
+		});
+
+		addCommand(message, /^>確認\s([a-zA-Z0-9]{8})$/, msg => {
+			let collection = db.collection(message.channel.guild.id);
+			collection.findOne({id: msg[1]}, (err, doc) => {
+				console.log(doc);
+				message.channel.send(
+`
+\`${doc.id}\`  ${level[doc.level]}  ${doc.title}
+
+${doc.content}
+
+by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}
+`);
 			});
 		});
 
 		addCommand(message, /^>完了\s([a-zA-Z0-9]{8})$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
-			collection.updateOne({id:msg[1]}, {$set: {status: false}}, (err, result) => {
-				message.channel.send((error) ? 'エラー：'+error : `\`${msg[1]}\`の状態を完了にしました。`);
+			collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
+				message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
 			});
 		});
 	});

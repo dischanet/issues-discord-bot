@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/yuta0801/issues-kun#readme",
   "dependencies": {
+    "date-utils": "^1.2.21",
     "discord.js": "^11.1.0",
     "mongodb": "^2.2.30"
   },
