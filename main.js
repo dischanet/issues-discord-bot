@@ -1,7 +1,7 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
 			mongo   = require('mongodb').MongoClient,
-			level   = ['提案', '__確認__', '__**重要**__', '__***至急***__'];
+			level   = ['提案', '__確認__', '**重要**', '__**至急**__'];
 
 require('date-utils');
 
@@ -24,7 +24,6 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 	>submit  問題を投稿する
 	>show    問題の詳細を表示する
 	>close   問題を閉じる
-	>issue   問題くんの問題を報告する
 \`\`\`
 ​それぞれのコマンドの詳細はこちらを参照してください。
 https://github.com/yuta0801/issues-kun/wiki/Command`);
@@ -86,28 +85,11 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 
 		addCommand(message, /^>close ([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
-				collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
-					message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
-				});
-			});
-		});
-
-		// 報告する
-		addCommand(message, /^>issue (.{2,20}) ([0-3])[ \n]([\s\S]+)$/, msg => {
-			db.createCollection('issues-kun', (err, collection) => {
-				let ids = [];
-				for (let doc of docs) ids.push(doc.id);
-				collection.insertOne({
-					id:      makeId(ids),
-					user:    message.author.tag,
-					title:   msg[1],
-					level:   msg[2],
-					content: msg[3],
-					status:  'open',
-					date:    new Date()
-				}, (error, result) => {
-					message.channel.send((error)?'エラー：'+error:'投稿しました。');
-					console.log(result);
+				collection.findOne({id: msg[1]}, (err, doc) => {
+					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
+						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
+					});
 				});
 			});
 		});
@@ -132,4 +114,8 @@ function findArr(arr, cmd) {
 	for (var i=0; i<arr.length; i++) {
 		if (arr[i] && arr[i].match(cmd)) return arr[i];
 	}
+}
+
+function isOwner(message) {
+	return message.user.id == message.channel.guild.ownerID;
 }
