@@ -1,7 +1,7 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
 			mongo   = require('mongodb').MongoClient,
-			level   = ['提案', '__確認__', '**重要**', '__**至急**__'];
+			level   = ['提案', '*確認*', '**重要**', '***至急***'];
 
 require('date-utils');
 
@@ -11,10 +11,10 @@ client.on('ready', () => {
 	console.log('I am ready!');
 });
 
-mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
+mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 	client.on('message', message => {
 		// 説明表示
-		addCommand(message, /^>問題くん$/, msg => {
+		addCommand(message, />help(\s(\w+))?$^)?/, msg => {
 			message.channel.send(
 `\`>投稿 タイトル 重要度 内容\`
 値と値の間の区切り文字は、
@@ -38,7 +38,7 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 		});
 
 		// 初期設定
-		addCommand(message, /^>初期化$/, msg => {
+		addCommand(message, /^>init$/, msg => {
 			db.dropCollection(message.channel.guild.id, (err, result) => {
 				message.channel.send((error)?'エラー：'+error:'削除が完了しました。');
 			});
@@ -48,7 +48,7 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 		});
 
 		// 一覧表示
-		addCommand(message, /^>一覧/, msg => {
+		addCommand(message, /^>log(\s([0-3]))?(\s(open|closed))?/, msg => {
 			let list = [], collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				for (let doc of docs) {
@@ -61,7 +61,7 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 		});
 
 		// 投稿する
-		addCommand(message, /^>投稿\s(.{2,20})\s(\d)[\s\n]([\s\S]+)$/, msg => {
+		addCommand(message, /^>submit\s(.{2,20})\s([0-3])[\s\n]([\s\S]+)$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				let ids = [];
@@ -80,7 +80,7 @@ mongo.connect('mongodb://127.0.0.1:27017/issues', (error, db) => {
 			});
 		});
 
-		addCommand(message, /^>確認\s([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>show\s([a-zA-Z0-9]{8})$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.findOne({id: msg[1]}, (err, doc) => {
 				console.log(doc);
@@ -95,7 +95,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}
 			});
 		});
 
-		addCommand(message, /^>完了\s([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>close\s([a-zA-Z0-9]{8})$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
 				message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
