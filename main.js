@@ -14,7 +14,7 @@ client.on('ready', () => {
 mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 	client.on('message', message => {
 		// 説明表示
-		addCommand(message, />help(\s(\w+))?$^)?/, msg => {
+		addCommand(message, />help( (\w+))?$^)?/, msg => {
 			message.channel.send(
 `\`>投稿 タイトル 重要度 内容\`
 値と値の間の区切り文字は、
@@ -48,7 +48,7 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 		});
 
 		// 一覧表示
-		addCommand(message, /^>log(\s([0-3]))?(\s(open|closed))?/, msg => {
+		addCommand(message, /^>log( ([0-3]))?( (open|closed))?/, msg => {
 			let list = [], collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				for (let doc of docs) {
@@ -61,7 +61,7 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 		});
 
 		// 投稿する
-		addCommand(message, /^>submit\s(.{2,20})\s([0-3])[\s\n]([\s\S]+)$/, msg => {
+		addCommand(message, /^>submit (.{2,20}) ([0-3])[ \n]([\s\S]+)$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.find().toArray((err, docs) => {
 				let ids = [];
@@ -80,7 +80,7 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 			});
 		});
 
-		addCommand(message, /^>show\s([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>show ([a-zA-Z0-9]{8})$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.findOne({id: msg[1]}, (err, doc) => {
 				console.log(doc);
@@ -95,7 +95,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}
 			});
 		});
 
-		addCommand(message, /^>close\s([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>close ([a-zA-Z0-9]{8})$/, msg => {
 			let collection = db.collection(message.channel.guild.id);
 			collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
 				message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
