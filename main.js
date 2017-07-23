@@ -1,7 +1,7 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
 			mongo   = require('mongodb').MongoClient,
-			level   = ['提案', '*確認*', '**重要**', '***至急***'];
+			level   = ['提案', '__確認__', '__**重要**__', '__***至急***__'];
 
 require('date-utils');
 
@@ -20,7 +20,6 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 \`\`\`
 ​コマンド：
 	>help    このメッセージを表示する
-	>init    初期設定を行う
 	>log     問題の一覧を表示する
 	>submit  問題を投稿する
 	>show    問題の詳細を表示する
@@ -32,16 +31,15 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
 		// 一覧表示
-		addCommand(message, /^>log( ([0-3]))?( (open|closed))?( ([^#]{2,32}#\d{4}))?$/, msg => {
-			console.log(msg);
+		addCommand(message, /^>log( ([0-3](,[0-3]){0,3}))?( (open|closed))?( ([^#]{2,32}#\d{4}))?$/, msg => {
 			let list = [];
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
+					let args  = [msg[2], msg[5], msg[7]],
+							lv    = findArr(args, /^[0-3](,[0-3]){0,3}$/),
+							user  = findArr(args, /^[^#]{2,32}#\d{4}$/),
+							stats = findArr(args, /^(open|closed)$/);
 					for (let doc of docs) {
-						let args  = [msg[2], msg[4], msg[6]],
-								lv    = findArr(args, /[0-3]/),
-								user  = findArr(args, /[^#]{2,32}#\d{4}/),
-								stats = findArr(args, /(open|closed)/);
 						if ( lv    && doc.level  != lv)   continue;
 						if ( user  && doc.user   != user) continue;
 						if ((stats && doc.status != stats) || (!stats && doc.status != 'open')) continue;
@@ -132,6 +130,6 @@ function addCommand(message, cmd, callback) {
 
 function findArr(arr, cmd) {
 	for (var i=0; i<arr.length; i++) {
-		if (arr[i].match(cmd)) return arr[i];
+		if (arr[i] && arr[i].match(cmd)) return arr[i];
 	}
 }
