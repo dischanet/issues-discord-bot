@@ -1,7 +1,6 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
-			mongo   = require('mongodb').MongoClient,
-			level   = ['提案', '__確認__', '**重要**', '__**至急**__'];
+			mongo   = require('mongodb').MongoClient;
 
 require('date-utils');
 
@@ -30,19 +29,17 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
 		// 一覧表示
-		addCommand(message, /^>log( ([0-3](,[0-3]){0,3}))?( (open|closed))?( ([^#]{2,32}#\d{4}))?$/, msg => {
+		addCommand(message, /^>log( (open|closed))?( ([^#]{2,32}#\d{4}))?$/, msg => {
 			let list = [];
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
-					let args  = [msg[2], msg[5], msg[7]],
-							lv    = findArr(args, /^[0-3](,[0-3]){0,3}$/),
+					let args  = [msg[2], msg[4]],
 							user  = findArr(args, /^[^#]{2,32}#\d{4}$/),
 							stats = findArr(args, /^(open|closed)$/);
 					for (let doc of docs) {
-						if ( lv    && doc.level  != lv)   continue;
 						if ( user  && doc.user   != user) continue;
 						if ((stats && doc.status != stats) || (!stats && doc.status != 'open')) continue;
-						list.push(`\`${doc.id}\`  ${level[doc.level]}  ${doc.title}  by ${doc.user}`);
+						list.push(`\`${doc.id}\`  ${doc.title}  by ${doc.user}`);
 					}
 					message.channel.send((list.length>0)?list.join('\n'):'見つかりませんでした！');
 				});
@@ -50,7 +47,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
 		// 投稿する
-		addCommand(message, /^>submit (.{2,20}) ([0-3])[ \n]([\s\S]+)$/, msg => {
+		addCommand(message, /^>submit (.{2,20})[ \n]([\s\S]+)$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
 					let ids = [];
@@ -59,8 +56,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 						id:      makeId(ids),
 						user:    message.author.tag,
 						title:   msg[1],
-						level:   msg[2],
-						content: msg[3],
+						content: msg[2],
 						status:  'open',
 						date:    new Date()
 					}, (error, result) => {
@@ -74,7 +70,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					message.channel.send(
-`\`${doc.id}\`  ${level[doc.level]}  ${doc.title}
+`\`${doc.id}\`  ${doc.title}
 
 ${doc.content}
 
