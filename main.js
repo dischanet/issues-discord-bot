@@ -90,6 +90,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 					});
 				});
 			});
+		});
 
 		// 開く
 		addCommand(message, /^>open\s([a-zA-Z0-9]{8})$/, msg => {
