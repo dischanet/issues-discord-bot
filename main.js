@@ -90,6 +90,17 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 					});
 				});
 			});
+
+		// 開く
+		addCommand(message, /^>open\s([a-zA-Z0-9]{8})$/, msg => {
+			db.createCollection(message.channel.guild.id, (err, collection) => {
+				collection.findOne({id: msg[1]}, (err, doc) => {
+					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					collection.updateOne({id: msg[1]}, {$set: {status: 'open'}}, (err, result) => {
+						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を開きました。`);
+					});
+				});
+			});
 		});
 	});
 });
