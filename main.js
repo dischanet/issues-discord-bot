@@ -86,7 +86,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
 					collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
-						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を完了状態にしました。`);
+						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を閉じました。`);
 					});
 				});
 			});
