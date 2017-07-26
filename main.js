@@ -66,6 +66,25 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 			});
 		});
 
+		// 修正
+		addCommand(message, /^>revise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
+			db.createCollection(message.channel.guild.id, (err, collection) => {
+				collection.findOne({id: msg[1]}, (err, doc) => {
+					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					collection.updateOne({_id: doc._id}, {$set: {
+						id:      makeId(ids),
+						user:    message.author.tag,
+						title:   msg[2],
+						content: msg[3],
+						status:  'open',
+						date:    new Date()
+					}}, (err, result) => {
+						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を変更しました。`);
+					});
+				});
+			});
+		});
+
 		// 表示
 		addCommand(message, /^>show\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
