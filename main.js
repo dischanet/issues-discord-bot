@@ -58,7 +58,8 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 						title:   msg[1],
 						content: msg[2],
 						status:  'open',
-						date:    new Date()
+						date:    new Date(),
+						update:  null
 					}, (error, result) => {
 						message.channel.send((error)?'エラー：'+error:'投稿しました。');
 					});
@@ -77,7 +78,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 						title:   msg[2],
 						content: msg[3],
 						status:  'open',
-						date:    new Date()
+						update:   new Date()
 					}}, (err, result) => {
 						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を変更しました。`);
 					});
