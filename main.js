@@ -85,7 +85,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
-					collection.updateOne({id: msg[1]}, {$set: {status: 'closed'}}, (err, result) => {
+					collection.updateOne({_id: doc._id}, {$set: {status: 'closed'}}, (err, result) => {
 						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を閉じました。`);
 					});
 				});
@@ -96,7 +96,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
-					collection.updateOne({id: msg[1]}, {$set: {status: 'open'}}, (err, result) => {
+					collection.updateOne({_id: doc._id}, {$set: {status: 'open'}}, (err, result) => {
 						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を開きました。`);
 					});
 				});
