@@ -29,7 +29,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
 		// 一覧表示
-		addCommand(message, /^>log( (open|closed))?( ([^#]{2,32}#\d{4}))?$/, msg => {
+		addCommand(message, /^>log(\s(open|closed))?(\s([^#]{2,32}#\d{4}))?$/, msg => {
 			let list = [];
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
@@ -47,7 +47,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
 		// 投稿する
-		addCommand(message, /^>submit (.{2,20})[ \n]([\s\S]+)$/, msg => {
+		addCommand(message, /^>submit\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
 					let ids = [];
@@ -66,7 +66,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 			});
 		});
 
-		addCommand(message, /^>show ([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>show\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					message.channel.send(
@@ -79,7 +79,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 			});
 		});
 
-		addCommand(message, /^>close ([a-zA-Z0-9]{8})$/, msg => {
+		addCommand(message, /^>close\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
 					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
