@@ -28,7 +28,7 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 https://github.com/yuta0801/issues-kun/wiki/Command`);
 		});
 
-		// 一覧表示
+		// 一覧
 		addCommand(message, /^>log(\s(open|closed))?(\s([^#]{2,32}#\d{4}))?$/, msg => {
 			let list = [];
 			db.createCollection(message.channel.guild.id, (err, collection) => {
@@ -46,7 +46,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 			});
 		});
 
-		// 投稿する
+		// 投稿
 		addCommand(message, /^>submit\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.find().toArray((err, docs) => {
@@ -66,6 +66,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 			});
 		});
 
+		// 表示
 		addCommand(message, /^>show\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
@@ -79,6 +80,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 			});
 		});
 
+		// 閉じる
 		addCommand(message, /^>close\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
