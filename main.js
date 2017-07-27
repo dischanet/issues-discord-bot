@@ -147,5 +147,5 @@ function findArr(arr, cmd) {
 }
 
 function isOwner(message) {
-	return message.user.id == message.channel.guild.ownerID;
+	return message.author.id == message.channel.guild.ownerID;
 }
