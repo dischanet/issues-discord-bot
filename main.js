@@ -16,7 +16,7 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 		// 説明表示
 		addCommand(message, /^\/issues\shelp$/, msg => {
 			message.channel.send(
-`問題くんはそれぞれのDiscordのサーバー内でIssuesを管理できるBotです。
+`問題くんはGitHubのIssues風の問題点などをDiscordのサーバー内で管理できるBotです。
 コマンド：
 \`\`\`
 /issues help    このメッセージを表示する
