@@ -71,17 +71,22 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		addCommand(message, /^\/issues\srevise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
-					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
-					collection.updateOne({_id: doc._id}, {$set: {
-						id:      makeId(ids),
-						user:    message.author.tag,
-						title:   msg[2],
-						content: msg[3],
 						status:  'open',
 						update:  new Date()
-					}}, (err, result) => {
-						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を変更しました。`);
-					});
+					if (isOwner(message) || message.author.tag == doc.user) {
+						collection.updateOne({_id: doc._id}, {$set: {
+							id:      makeId(ids),
+							user:    message.author.tag,
+							title:   msg[2],
+							content: msg[3],
+							status:  'open',
+							update:  new Date()
+						}}, (err, result) => {
+							message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を変更しました。`);
+						});
+					} else {
+						message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					}
 				});
 			});
 		});
@@ -104,10 +109,13 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 		addCommand(message, /^\/issues\sclose\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
-					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
-					collection.updateOne({_id: doc._id}, {$set: {status: 'closed'}}, (err, result) => {
-						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を閉じました。`);
-					});
+					if (isOwner(message) || message.author.tag == doc.user) {
+						collection.updateOne({_id: doc._id}, {$set: {status: 'closed'}}, (err, result) => {
+							message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を閉じました。`);
+						});
+					} else {
+						message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					}
 				});
 			});
 		});
@@ -116,10 +124,13 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 		addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
-					if (!isOwner(message) && (message.tag != doc.user)) return message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
-					collection.updateOne({_id: doc._id}, {$set: {status: 'open'}}, (err, result) => {
-						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を開きました。`);
-					});
+					if (isOwner(message) || message.author.tag == doc.user) {
+						collection.updateOne({_id: doc._id}, {$set: {status: 'open'}}, (err, result) => {
+							message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を開きました。`);
+						});
+					} else {
+						message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
+					}
 				});
 			});
 		});
