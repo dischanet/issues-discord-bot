@@ -12,6 +12,7 @@ client.on('ready', () => {
 
 mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 	client.on('message', message => {
+		client.user.setGame('/issues help');
 		// 説明表示
 		addCommand(message, /^\/issues\shelp$/, msg => {
 			message.channel.send(
@@ -71,8 +72,6 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 		addCommand(message, /^\/issues\srevise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
 			db.createCollection(message.channel.guild.id, (err, collection) => {
 				collection.findOne({id: msg[1]}, (err, doc) => {
-						status:  'open',
-						update:  new Date()
 					if (isOwner(message) || message.author.tag == doc.user) {
 						collection.updateOne({_id: doc._id}, {$set: {
 							id:      makeId(ids),
