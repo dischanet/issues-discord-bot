@@ -1,6 +1,7 @@
 const Discord = require('discord.js'),
 			client  = new Discord.Client(),
-			mongo   = require('mongodb').MongoClient;
+			mongo   = require('mongodb').MongoClient,
+			token   = 'TOKEN_IS_HERE';
 
 require('date-utils');
 
@@ -137,7 +138,7 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 	});
 });
 
-client.login('MzM4Mjg1NDgxNTQ2NzQzODA4.DFTMaw.utI-HFYjpbt8Cu7pzb2S5hdfsHg');
+client.login(token);
 
 function makeId(arr) {
 	let c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', r = '';
