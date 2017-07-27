@@ -78,7 +78,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`);
 						title:   msg[2],
 						content: msg[3],
 						status:  'open',
-						update:   new Date()
+						update:  new Date()
 					}}, (err, result) => {
 						message.channel.send((error)?'エラー：'+error:`\`${msg[1]}\`を変更しました。`);
 					});
