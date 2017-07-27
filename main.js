@@ -17,13 +17,14 @@ mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
 		addCommand(message, /^\/issues\shelp$/, msg => {
 			message.channel.send(
 `問題くんはそれぞれのDiscordのサーバー内でIssuesを管理できるBotです。
+コマンド：
 \`\`\`
-​コマンド：
-	/issues help    このメッセージを表示する
-	/issues log     問題の一覧を表示する
-	/issues submit  問題を投稿する
-	/issues show    問題の詳細を表示する
-	/issues close   問題を閉じる
+/issues help    このメッセージを表示する
+/issues log     問題の一覧を表示する
+/issues submit  問題を投稿する
+/issues show    問題の詳細を表示する
+/issues close   問題を閉じる
+/issues open    問題を開く
 \`\`\`
 ​それぞれのコマンドの詳細はこちらを参照してください。
 https://github.com/yuta0801/issues-kun/wiki/Command`);
