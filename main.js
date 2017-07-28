@@ -135,12 +135,6 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 				});
 			});
 		});
-
-		addCommand(message, /^\/issues\smkgr\s\d{2,16}$/, msg => {
-			db.createCollection(message.channel.guild.id, (err, collection) => {
-
-			});
-		});
 	});
 });
 
