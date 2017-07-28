@@ -8,7 +8,7 @@ require('date-utils');
 let proposals = {};
 
 client.on('ready', () => {
-	console.log('I am ready!');
+	console.log(`Logged in as ${client.user.tag}!`);
 });
 
 mongo.connect('mongodb://localhost:27017/issues', (error, db) => {
@@ -133,6 +133,12 @@ by ${doc.user}  ${doc.status}  ${doc.date.toFormat('YYYY/MM/DD HH24:MI:SS')}`);
 						message.channel.send('サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！');
 					}
 				});
+			});
+		});
+
+		addCommand(message, /^\/issues\smkgr\s\d{2,16}$/, msg => {
+			db.createCollection(message.channel.guild.id, (err, collection) => {
+
 			});
 		});
 	});
