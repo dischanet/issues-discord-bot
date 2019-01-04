@@ -1,6 +1,5 @@
 const Discord = require("discord.js"),
-  client = new Discord.Client(),
-  token = "TOKEN_IS_HERE";
+  client = new Discord.Client();
 
 require("date-utils");
 const sqlite3 = require("sqlite3").verbose();
@@ -174,7 +173,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   });
 });
 
-client.login(token);
+client.login(process.env.DISCORD_BOT_TOKEN);
 
 function makeId(arr) {
   const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
