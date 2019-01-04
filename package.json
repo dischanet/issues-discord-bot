@@ -25,8 +25,8 @@
   "homepage": "https://github.com/yuta0801/issues-kun#readme",
   "dependencies": {
     "date-utils": "^1.2.21",
-    "discord.js": "^11.1.0",
-    "mongodb": "^2.2.30"
+    "discord.js": "^11.4.2",
+    "mongodb": "^3.1.10"
   },
   "devDependencies": {
     "eslint": "^5.11.1",
