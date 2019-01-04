@@ -33,7 +33,15 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   });
 
   // id, guild_id, user, status
-  // CREATE TABLE issues(guild_id string, user string, status string);
+  // CREATE TABLE issues(
+  // id INTEGER PRIMARY KEY AUTOINCREMENT,
+  // guild_id STRING,
+  // user STIRNG,
+  // title STRING,
+  // content STRING,
+  // status STRING,
+  // date STRING,
+  // update STRING);
 
   // 一覧
   addCommand(
@@ -65,28 +73,13 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
 
   // 投稿
   addCommand(message, /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/, (msg) => {
-    db.createCollection(message.channel.guild.id, (err, collection) => {
-      if (err) return; // TODO
-      collection.find().toArray((err, docs) => {
-        if (err) return; // TODO
-        const ids = [];
-        for (const doc of docs) ids.push(doc.id);
-        collection.insertOne(
-          {
-            id: makeId(ids),
-            user: message.author.tag,
-            title: msg[1],
-            content: msg[2],
-            status: "open",
-            date: new Date(),
-            update: null,
-          },
-          (error, result) => {
-            message.channel.send(error ? `エラー：${error}` : "投稿しました。");
-          }
-        );
-      });
-    });
+    db.run(
+      "INSERT INTO issues(user,title,content,status,date) VALUES(?,?,?,?,?)",
+      [message.author.tag, msg[1], msg[2], "open", new Date()],
+      (error) => {
+        message.channel.send(error ? `エラー：${error}` : "投稿しました。");
+      }
+    );
   });
 
   // 修正
