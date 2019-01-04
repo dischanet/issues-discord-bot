@@ -85,38 +85,25 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   // 修正
   addCommand(
     message,
-    /^\/issues\srevise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/,
+    /^\/issues\srevise\s(\d+)\s(.{2,20})[\s\n]([\s\S]+)$/,
     (msg) => {
-      db.createCollection(message.channel.guild.id, (err, collection) => {
+      db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
         if (err) return; // TODO
-        collection.findOne({ id: msg[1] }, (err, doc) => {
-          if (err) return; // TODO
-          if (isOwner(message) || message.author.tag === doc.user) {
-            collection.updateOne(
-              { _id: doc._id },
-              {
-                $set: {
-                  id: makeId(ids),
-                  user: message.author.tag,
-                  title: msg[2],
-                  content: msg[3],
-                  status: "open",
-                  update: new Date(),
-                },
-              },
-              (err, result) => {
-                if (err) return; // TODO
-                message.channel.send(
-                  error ? `エラー：${error}` : `\`${msg[1]}\`を変更しました。`
-                );
-              }
-            );
-          } else {
+        if (!isOwner(message) && message.author.tag !== doc.user) {
+          message.channel.send(
+            "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+          );
+          return;
+        }
+        db.get(
+          "UPDATE issues SET user=?, title=?, content=?, status=?, update=?",
+          [message.author.tag, msg[2], msg[3], "open", new Date()],
+          (error) => {
             message.channel.send(
-              "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+              error ? `エラー：${error}` : `\`${msg[1]}\`を変更しました。`
             );
           }
-        });
+        );
       });
     }
   );
