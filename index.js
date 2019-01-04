@@ -1,9 +1,10 @@
 const Discord = require("discord.js"),
   client = new Discord.Client(),
-  mongo = require("mongodb").MongoClient,
   token = "TOKEN_IS_HERE";
 
 require("date-utils");
+const sqlite3 = require("sqlite3").verbose();
+const db = new sqlite3.Database("issues.db");
 
 const proposals = {};
 
@@ -11,15 +12,12 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-mongo.connect(
-  "mongodb://localhost:27017/issues",
-  (error, db) => {
-    client.on("message", (message) => {
-      client.user.setGame("/issues help");
-      // 説明表示
-      addCommand(message, /^\/issues\shelp$/, (msg) => {
-        message.channel.send(
-          `問題くんはGitHubのIssues風の問題点などをDiscordのサーバー内で管理できるBotです。
+client.on("message", (message) => {
+  client.user.setGame("/issues help");
+  // 説明表示
+  addCommand(message, /^\/issues\shelp$/, (msg) => {
+    message.channel.send(
+      `問題くんはGitHubのIssues風の問題点などをDiscordのサーバー内で管理できるBotです。
 コマンド：
 \`\`\`
 /issues help    このメッセージを表示する
@@ -31,183 +29,174 @@ mongo.connect(
 \`\`\`
 ​それぞれのコマンドの詳細はこちらを参照してください。
 https://github.com/yuta0801/issues-kun/wiki/Command`
+    );
+  });
+
+  // id, guild_id, user, status
+  // CREATE TABLE issues(guild_id string, user string, status string);
+
+  // 一覧
+  addCommand(
+    message,
+    /^\/issues\slog(\s(open|closed))?(\s([^#]{2,32}#\d{4}))?$/,
+    (msg) => {
+      const list = [];
+      db.all(
+        "SELECT user, status FROM issues WHERE guild_id=?",
+        [message.channel.guild.id],
+        (err, rows) => {
+          if (err) return; // TODO
+          const args = [msg[2], msg[4]],
+            user = findArr(args, /^[^#]{2,32}#\d{4}$/),
+            stats = findArr(args, /^(open|closed)$/);
+          for (const doc of rows) {
+            if (user && doc[0] !== user) continue;
+            if ((stats && doc[1] !== stats) || (!stats && doc[1] !== "open"))
+              continue;
+            list.push(`\`${doc.id}\`  ${doc.title}  by ${doc.user}`);
+          }
+          message.channel.send(
+            list.length > 0 ? list.join("\n") : "見つかりませんでした！"
+          );
+        }
+      );
+    }
+  );
+
+  // 投稿
+  addCommand(message, /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/, (msg) => {
+    db.createCollection(message.channel.guild.id, (err, collection) => {
+      if (err) return; // TODO
+      collection.find().toArray((err, docs) => {
+        if (err) return; // TODO
+        const ids = [];
+        for (const doc of docs) ids.push(doc.id);
+        collection.insertOne(
+          {
+            id: makeId(ids),
+            user: message.author.tag,
+            title: msg[1],
+            content: msg[2],
+            status: "open",
+            date: new Date(),
+            update: null,
+          },
+          (error, result) => {
+            message.channel.send(error ? `エラー：${error}` : "投稿しました。");
+          }
         );
       });
+    });
+  });
 
-      // 一覧
-      addCommand(
-        message,
-        /^\/issues\slog(\s(open|closed))?(\s([^#]{2,32}#\d{4}))?$/,
-        (msg) => {
-          const list = [];
-          db.createCollection(message.channel.guild.id, (err, collection) => {
-            if (err) return; // TODO
-            collection.find().toArray((err, docs) => {
-              if (err) return; // TODO
-              const args = [msg[2], msg[4]],
-                user = findArr(args, /^[^#]{2,32}#\d{4}$/),
-                stats = findArr(args, /^(open|closed)$/);
-              for (const doc of docs) {
-                if (user && doc.user !== user) continue;
-                if (
-                  (stats && doc.status !== stats) ||
-                  (!stats && doc.status !== "open")
-                )
-                  continue;
-                list.push(`\`${doc.id}\`  ${doc.title}  by ${doc.user}`);
-              }
-              message.channel.send(
-                list.length > 0 ? list.join("\n") : "見つかりませんでした！"
-              );
-            });
-          });
-        }
-      );
-
-      // 投稿
-      addCommand(
-        message,
-        /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/,
-        (msg) => {
-          db.createCollection(message.channel.guild.id, (err, collection) => {
-            if (err) return; // TODO
-            collection.find().toArray((err, docs) => {
-              if (err) return; // TODO
-              const ids = [];
-              for (const doc of docs) ids.push(doc.id);
-              collection.insertOne(
-                {
+  // 修正
+  addCommand(
+    message,
+    /^\/issues\srevise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/,
+    (msg) => {
+      db.createCollection(message.channel.guild.id, (err, collection) => {
+        if (err) return; // TODO
+        collection.findOne({ id: msg[1] }, (err, doc) => {
+          if (err) return; // TODO
+          if (isOwner(message) || message.author.tag === doc.user) {
+            collection.updateOne(
+              { _id: doc._id },
+              {
+                $set: {
                   id: makeId(ids),
                   user: message.author.tag,
-                  title: msg[1],
-                  content: msg[2],
+                  title: msg[2],
+                  content: msg[3],
                   status: "open",
-                  date: new Date(),
-                  update: null,
+                  update: new Date(),
                 },
-                (error, result) => {
-                  message.channel.send(
-                    error ? `エラー：${error}` : "投稿しました。"
-                  );
-                }
-              );
-            });
-          });
-        }
-      );
-
-      // 修正
-      addCommand(
-        message,
-        /^\/issues\srevise\s([a-zA-Z0-9]{8})\s(.{2,20})[\s\n]([\s\S]+)$/,
-        (msg) => {
-          db.createCollection(message.channel.guild.id, (err, collection) => {
-            if (err) return; // TODO
-            collection.findOne({ id: msg[1] }, (err, doc) => {
-              if (err) return; // TODO
-              if (isOwner(message) || message.author.tag === doc.user) {
-                collection.updateOne(
-                  { _id: doc._id },
-                  {
-                    $set: {
-                      id: makeId(ids),
-                      user: message.author.tag,
-                      title: msg[2],
-                      content: msg[3],
-                      status: "open",
-                      update: new Date(),
-                    },
-                  },
-                  (err, result) => {
-                    if (err) return; // TODO
-                    message.channel.send(
-                      error
-                        ? `エラー：${error}`
-                        : `\`${msg[1]}\`を変更しました。`
-                    );
-                  }
-                );
-              } else {
+              },
+              (err, result) => {
+                if (err) return; // TODO
                 message.channel.send(
-                  "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+                  error ? `エラー：${error}` : `\`${msg[1]}\`を変更しました。`
                 );
               }
-            });
-          });
-        }
-      );
-
-      // 表示
-      addCommand(message, /^\/issues\sshow\s([a-zA-Z0-9]{8})$/, (msg) => {
-        db.createCollection(message.channel.guild.id, (err, collection) => {
-          if (err) return; // TODO
-          collection.findOne({ id: msg[1] }, (err, doc) => {
-            if (err) return; // TODO
+            );
+          } else {
             message.channel.send(
-              `\`${doc.id}\`  ${doc.title}
+              "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+            );
+          }
+        });
+      });
+    }
+  );
+
+  // 表示
+  addCommand(message, /^\/issues\sshow\s([a-zA-Z0-9]{8})$/, (msg) => {
+    db.createCollection(message.channel.guild.id, (err, collection) => {
+      if (err) return; // TODO
+      collection.findOne({ id: msg[1] }, (err, doc) => {
+        if (err) return; // TODO
+        message.channel.send(
+          `\`${doc.id}\`  ${doc.title}
 
 ${doc.content}
 
 by ${doc.user}  ${doc.status}  ${doc.date.toFormat("YYYY/MM/DD HH24:MI:SS")}`
-            );
-          });
-        });
-      });
-
-      // 閉じる
-      addCommand(message, /^\/issues\sclose\s([a-zA-Z0-9]{8})$/, (msg) => {
-        db.createCollection(message.channel.guild.id, (err, collection) => {
-          if (err) return; // TODO
-          collection.findOne({ id: msg[1] }, (err, doc) => {
-            if (err) return; // TODO
-            if (isOwner(message) || message.author.tag === doc.user) {
-              collection.updateOne(
-                { _id: doc._id },
-                { $set: { status: "closed" } },
-                (err, result) => {
-                  if (err) return; // TODO
-                  message.channel.send(
-                    error ? `エラー：${error}` : `\`${msg[1]}\`を閉じました。`
-                  );
-                }
-              );
-            } else {
-              message.channel.send(
-                "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
-              );
-            }
-          });
-        });
-      });
-
-      // 開く
-      addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, (msg) => {
-        db.createCollection(message.channel.guild.id, (err, collection) => {
-          if (err) return; // TODO
-          collection.findOne({ id: msg[1] }, (err, doc) => {
-            if (err) return; // TODO
-            if (isOwner(message) || message.author.tag === doc.user) {
-              collection.updateOne(
-                { _id: doc._id },
-                { $set: { status: "open" } },
-                (err, result) => {
-                  if (err) return; // TODO
-                  message.channel.send(
-                    error ? `エラー：${error}` : `\`${msg[1]}\`を開きました。`
-                  );
-                }
-              );
-            } else {
-              message.channel.send(
-                "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
-              );
-            }
-          });
-        });
+        );
       });
     });
-  }
-);
+  });
+
+  // 閉じる
+  addCommand(message, /^\/issues\sclose\s([a-zA-Z0-9]{8})$/, (msg) => {
+    db.createCollection(message.channel.guild.id, (err, collection) => {
+      if (err) return; // TODO
+      collection.findOne({ id: msg[1] }, (err, doc) => {
+        if (err) return; // TODO
+        if (isOwner(message) || message.author.tag === doc.user) {
+          collection.updateOne(
+            { _id: doc._id },
+            { $set: { status: "closed" } },
+            (err, result) => {
+              if (err) return; // TODO
+              message.channel.send(
+                error ? `エラー：${error}` : `\`${msg[1]}\`を閉じました。`
+              );
+            }
+          );
+        } else {
+          message.channel.send(
+            "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+          );
+        }
+      });
+    });
+  });
+
+  // 開く
+  addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, (msg) => {
+    db.createCollection(message.channel.guild.id, (err, collection) => {
+      if (err) return; // TODO
+      collection.findOne({ id: msg[1] }, (err, doc) => {
+        if (err) return; // TODO
+        if (isOwner(message) || message.author.tag === doc.user) {
+          collection.updateOne(
+            { _id: doc._id },
+            { $set: { status: "open" } },
+            (err, result) => {
+              if (err) return; // TODO
+              message.channel.send(
+                error ? `エラー：${error}` : `\`${msg[1]}\`を開きました。`
+              );
+            }
+          );
+        } else {
+          message.channel.send(
+            "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
+          );
+        }
+      });
+    });
+  });
+});
 
 client.login(token);
 
