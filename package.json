@@ -4,7 +4,10 @@
   "description": "アプリの問題点などをまとめることができるDiscordのBotです。",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./main.js",
+    "lint": "eslint --fix --ext .js .",
+    "precommit": "pretty-quick --staged"
   },
   "author": "yuta",
   "license": "MIT",
@@ -25,5 +28,12 @@
     "discord.js": "^11.1.0",
     "mongodb": "^2.2.30"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^5.11.1",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-config-problems": "^2.0.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "prettier": "^1.15.3",
+    "pretty-quick": "^1.8.0"
+  }
 }
