@@ -1,5 +1,6 @@
-const Discord = require("discord.js"),
-  client = new Discord.Client();
+const util = require("util");
+const Discord = require("discord.js");
+const client = new Discord.Client();
 
 require("date-utils");
 const sqlite3 = require("sqlite3").verbose();
@@ -16,29 +17,9 @@ db.run(
   update_at STRING)`
 );
 
-const dbGet = (sql, arg) =>
-  new Promise((resolve, reject) => {
-    db.get(sql, arg, (error, row) => {
-      if (error) reject(error);
-      else resolve(row);
-    });
-  });
-
-const dbAll = (sql, arg) =>
-  new Promise((resolve, reject) => {
-    db.all(sql, arg, (error, rows) => {
-      if (error) reject(error);
-      else resolve(rows);
-    });
-  });
-
-const dbRun = (sql, arg) =>
-  new Promise((resolve, reject) => {
-    db.run(sql, arg, error => {
-      if (error) reject(error);
-      else resolve();
-    });
-  });
+const dbGet = util.promisify(db.get);
+const dbAll = util.promisify(db.all);
+const dbRun = util.promisify(db.run);
 
 const addCommand = async (message, cmd, callback) => {
   const args = message.content.match(cmd);
