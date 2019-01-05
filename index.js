@@ -22,10 +22,10 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on("message", (message) => {
+client.on("message", message => {
   client.user.setGame("/issues help");
   // 説明表示
-  addCommand(message, /^\/issues\shelp$/, (msg) => {
+  addCommand(message, /^\/issues\shelp$/, msg => {
     message.channel.send(
       `問題くんはGitHubのIssues風の問題点などをDiscordのサーバー内で管理できるBotです。
 コマンド：
@@ -57,7 +57,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   addCommand(
     message,
     /^\/issues\slog(\s(open|closed))?(\s([^#]{2,32}#\d{4}))?$/,
-    (msg) => {
+    msg => {
       const list = [];
       db.all(
         "SELECT user, status FROM issues WHERE guild_id=?",
@@ -82,11 +82,11 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   );
 
   // 投稿
-  addCommand(message, /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/, (msg) => {
+  addCommand(message, /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/, msg => {
     db.run(
       "INSERT INTO issues(user,title,content,status,date) VALUES(?,?,?,?,?)",
       [message.author.tag, msg[1], msg[2], "open", new Date()],
-      (error) => {
+      error => {
         message.channel.send(error ? `エラー：${error}` : "投稿しました。");
       }
     );
@@ -96,7 +96,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   addCommand(
     message,
     /^\/issues\srevise\s(\d+)\s(.{2,20})[\s\n]([\s\S]+)$/,
-    (msg) => {
+    msg => {
       db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
         if (err) return; // TODO
         if (!isOwner(message) && message.author.tag !== doc.user) {
@@ -108,7 +108,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
         db.get(
           "UPDATE issues SET user=?, title=?, content=?, status=?, update=?",
           [message.author.tag, msg[2], msg[3], "open", new Date()],
-          (error) => {
+          error => {
             message.channel.send(
               error ? `エラー：${error}` : `\`${msg[1]}\`を変更しました。`
             );
@@ -119,7 +119,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
   );
 
   // 表示
-  addCommand(message, /^\/issues\sshow\s(\d+)$/, (msg) => {
+  addCommand(message, /^\/issues\sshow\s(\d+)$/, msg => {
     db.get(
       "SELECT id, title, content, user, status, date FROM issues WHERE id=?",
       [msg[1]],
@@ -137,7 +137,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   });
 
   // 閉じる
-  addCommand(message, /^\/issues\sclose\s(\d+)$/, (msg) => {
+  addCommand(message, /^\/issues\sclose\s(\d+)$/, msg => {
     db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
       if (err) return; // TODO
       if (!isOwner(message) && message.author.tag !== doc.user) {
@@ -146,7 +146,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
         );
         return;
       }
-      db.get("UPDATE issues SET status=?", ["closed"], (error) => {
+      db.get("UPDATE issues SET status=?", ["closed"], error => {
         message.channel.send(
           error ? `エラー：${error}` : `\`${msg[1]}\`を閉じました。`
         );
@@ -155,7 +155,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   });
 
   // 開く
-  addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, (msg) => {
+  addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, msg => {
     db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
       if (err) return; // TODO
       if (!isOwner(message) && message.author.tag !== doc.user) {
@@ -164,7 +164,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
         );
         return;
       }
-      db.get("UPDATE issues SET status=?", ["open"], (error) => {
+      db.get("UPDATE issues SET status=?", ["open"], error => {
         message.channel.send(
           error ? `エラー：${error}` : `\`${msg[1]}\`を開きました。`
         );
