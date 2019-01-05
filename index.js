@@ -25,9 +25,9 @@ const addCommand = async (message, cmd, callback) => {
   const args = message.content.match(cmd);
   if (!args) return;
   try {
-    await callback(args);
+    return await callback(args);
   } catch (error) {
-    message.reply("コマンド実行中にエラーが発生しました");
+    message.reply(`コマンド実行中にエラーが発生しました: ${error}`);
   }
 };
 
