@@ -13,7 +13,7 @@ db.run(
   content STRING,
   status STRING,
   date STRING,
-  update STRING`
+  update STRING)`
 );
 
 client.on("ready", () => {
