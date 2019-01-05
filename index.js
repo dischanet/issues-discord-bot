@@ -78,7 +78,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
     async msg => {
       const list = [];
       const rows = await dbAll(
-        "SELECT id, user, status FROM issues WHERE guild_id=?",
+        "SELECT id, user, title, status FROM issues WHERE guild_id=?",
         [message.channel.guild.id]
       );
       const args = [msg[2], msg[4]],
@@ -105,8 +105,15 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
     /^\/issues\ssubmit\s(.{2,20})[\s\n]([\s\S]+)$/,
     async msg => {
       await dbRun(
-        "INSERT INTO issues(user,title,content,status,date) VALUES(?,?,?,?,?)",
-        [message.author.tag, msg[1], msg[2], "open", new Date()]
+        "INSERT INTO issues(guild_id,user,title,content,status,date) VALUES(?,?,?,?,?,?)",
+        [
+          message.channel.guild.id,
+          message.author.tag,
+          msg[1],
+          msg[2],
+          "open",
+          new Date()
+        ]
       );
       message.channel.send("投稿しました。");
     }
@@ -157,7 +164,7 @@ by ${row.user}  ${row.status}  ${row.date}`
       );
       return;
     }
-    await dbRun("UPDATE issues SET status=?", ["closed"]);
+    await dbRun("UPDATE issues SET status=? WHERE id=?", ["closed", msg[1]]);
     message.channel.send(`\`${msg[1]}\`を閉じました。`);
   });
 
@@ -170,13 +177,13 @@ by ${row.user}  ${row.status}  ${row.date}`
       );
       return;
     }
-    await dbRun("UPDATE issues SET status=?", ["open"]);
+    await dbRun("UPDATE issues SET status=? WHERE id=?", ["open", msg[1]]);
     message.channel.send(`\`${msg[1]}\`を開きました。`);
   });
 });
 
-client.login(process.env.DISCORD_BOT_TOKEN);
-
+// client.login(process.env.DISCORD_BOT_TOKEN);
+client.login("NTMxMTkzMTEyMTUyODk5NTg1.DxKXvw.rp1iKokCJ7K91O6M9MAB4An0-lg");
 // function makeId(arr) {
 //   const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 //   let r = "";
