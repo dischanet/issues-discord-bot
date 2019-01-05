@@ -16,8 +16,6 @@ db.run(
   update STRING`
 );
 
-const proposals = {};
-
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -25,7 +23,7 @@ client.on("ready", () => {
 client.on("message", message => {
   client.user.setGame("/issues help");
   // 説明表示
-  addCommand(message, /^\/issues\shelp$/, msg => {
+  addCommand(message, /^\/issues\shelp$/, () => {
     message.channel.send(
       `問題くんはGitHubのIssues風の問題点などをDiscordのサーバー内で管理できるBotです。
 コマンド：
@@ -37,7 +35,7 @@ client.on("message", message => {
 /issues close   問題を閉じる
 /issues open    問題を開く
 \`\`\`
-​それぞれのコマンドの詳細はこちらを参照してください。
+それぞれのコマンドの詳細はこちらを参照してください。
 https://github.com/yuta0801/issues-kun/wiki/Command`
     );
   });
@@ -99,7 +97,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
     msg => {
       db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
         if (err) return; // TODO
-        if (!isOwner(message) && message.author.tag !== doc.user) {
+        if (!isOwner(message) && message.author.tag !== row[0]) {
           message.channel.send(
             "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
           );
@@ -140,7 +138,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   addCommand(message, /^\/issues\sclose\s(\d+)$/, msg => {
     db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
       if (err) return; // TODO
-      if (!isOwner(message) && message.author.tag !== doc.user) {
+      if (!isOwner(message) && message.author.tag !== row[0]) {
         message.channel.send(
           "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
         );
@@ -158,7 +156,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, msg => {
     db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
       if (err) return; // TODO
-      if (!isOwner(message) && message.author.tag !== doc.user) {
+      if (!isOwner(message) && message.author.tag !== row[0]) {
         message.channel.send(
           "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
         );
@@ -175,14 +173,14 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
 
 client.login(process.env.DISCORD_BOT_TOKEN);
 
-function makeId(arr) {
-  const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let r = "";
-  for (let i = 0; i < 8; i++) {
-    r += c[Math.floor(Math.random() * c.length)];
-  }
-  return arr.includes(r) ? makeId(arr) : r;
-}
+// function makeId(arr) {
+//   const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+//   let r = "";
+//   for (let i = 0; i < 8; i++) {
+//     r += c[Math.floor(Math.random() * c.length)];
+//   }
+//   return arr.includes(r) ? makeId(arr) : r;
+// }
 
 function addCommand(message, cmd, callback) {
   if (message.content.match(cmd)) return callback(message.content.match(cmd));
