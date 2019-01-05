@@ -142,7 +142,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   });
 
   // 開く
-  addCommand(message, /^\/issues\sopen\s([a-zA-Z0-9]{8})$/, msg => {
+  addCommand(message, /^\/issues\sopen\s(\d+)$/, msg => {
     db.get("SELECT user FROM issues WHERE id=?", [msg[1]], (err, row) => {
       if (err) return; // TODO
       if (!isOwner(message) && message.author.tag !== row[0]) {
