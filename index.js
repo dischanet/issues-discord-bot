@@ -13,7 +13,7 @@ db.run(
   content STRING,
   status STRING,
   date STRING,
-  update STRING)`
+  update_at STRING)`
 );
 
 client.on("ready", () => {
@@ -39,17 +39,6 @@ client.on("message", message => {
 https://github.com/yuta0801/issues-kun/wiki/Command`
     );
   });
-
-  // id, guild_id, user, status
-  // CREATE TABLE issues(
-  // id INTEGER PRIMARY KEY AUTOINCREMENT,
-  // guild_id STRING,
-  // user STIRNG,
-  // title STRING,
-  // content STRING,
-  // status STRING,
-  // date STRING,
-  // update STRING);
 
   // 一覧
   addCommand(
@@ -104,7 +93,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
           return;
         }
         db.get(
-          "UPDATE issues SET user=?, title=?, content=?, status=?, update=?",
+          "UPDATE issues SET user=?, title=?, content=?, status=?, update_at=?",
           [message.author.tag, msg[2], msg[3], "open", new Date()],
           error => {
             message.channel.send(
