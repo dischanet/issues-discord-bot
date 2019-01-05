@@ -17,9 +17,15 @@ db.run(
   update_at STRING)`
 );
 
-const dbGet = util.promisify(db.get);
-const dbAll = util.promisify(db.all);
-const dbRun = util.promisify(db.run);
+const dbGet = util.promisify((sql, arg, callback) =>
+  db.get(sql, arg, callback)
+);
+const dbAll = util.promisify((sql, arg, callback) =>
+  db.all(sql, arg, callback)
+);
+const dbRun = util.promisify((sql, arg, callback) =>
+  db.run(sql, arg, callback)
+);
 
 const addCommand = async (message, cmd, callback) => {
   const args = message.content.match(cmd);
