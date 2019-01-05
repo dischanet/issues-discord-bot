@@ -78,17 +78,20 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
     async msg => {
       const list = [];
       const rows = await dbAll(
-        "SELECT user, status FROM issues WHERE guild_id=?",
+        "SELECT id, user, status FROM issues WHERE guild_id=?",
         [message.channel.guild.id]
       );
       const args = [msg[2], msg[4]],
         user = findArr(args, /^[^#]{2,32}#\d{4}$/),
         stats = findArr(args, /^(open|closed)$/);
-      for (const doc of rows) {
-        if (user && doc[0] !== user) continue;
-        if ((stats && doc[1] !== stats) || (!stats && doc[1] !== "open"))
+      for (const row of rows) {
+        if (user && row.user !== user) continue;
+        if (
+          (stats && row.status !== stats) ||
+          (!stats && row.status !== "open")
+        )
           continue;
-        list.push(`\`${doc.id}\`  ${doc.title}  by ${doc.user}`);
+        list.push(`\`${row.id}\`  ${row.title}  by ${row.user}`);
       }
       message.channel.send(
         list.length > 0 ? list.join("\n") : "見つかりませんでした！"
@@ -116,7 +119,7 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
     async msg => {
       const row = await dbGet("SELECT user FROM issues WHERE id=?", [msg[1]]);
 
-      if (!isOwner(message) && message.author.tag !== row[0]) {
+      if (!isOwner(message) && message.author.tag !== row.user) {
         message.channel.send(
           "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
         );
@@ -137,18 +140,18 @@ https://github.com/yuta0801/issues-kun/wiki/Command`
       [msg[1]]
     );
     message.channel.send(
-      `\`${row[0]}\`  ${row[1]}
+      `\`${row.id}\`  ${row.title}
 
-${row[2]}
+${row.content}
 
-by ${row[3]}  ${row[4]}  ${row[5]}`
+by ${row.user}  ${row.status}  ${row.date}`
     );
   });
 
   // 閉じる
   addCommand(message, /^\/issues\sclose\s(\d+)$/, async msg => {
     const row = dbGet("SELECT user FROM issues WHERE id=?", [msg[1]]);
-    if (!isOwner(message) && message.author.tag !== row[0]) {
+    if (!isOwner(message) && message.author.tag !== row.user) {
       message.channel.send(
         "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
       );
@@ -161,7 +164,7 @@ by ${row[3]}  ${row[4]}  ${row[5]}`
   // 開く
   addCommand(message, /^\/issues\sopen\s(\d+)$/, async msg => {
     const row = await dbGet("SELECT user FROM issues WHERE id=?", [msg[1]]);
-    if (!isOwner(message) && message.author.tag !== row[0]) {
+    if (!isOwner(message) && message.author.tag !== row.user) {
       message.channel.send(
         "サーバーのオーナー以外は他人の投稿した問題を閉じることはできません！"
       );
