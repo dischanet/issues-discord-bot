@@ -183,11 +183,3 @@ by ${row.user}  ${row.status}  ${row.date}`
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
-// function makeId(arr) {
-//   const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-//   let r = "";
-//   for (let i = 0; i < 8; i++) {
-//     r += c[Math.floor(Math.random() * c.length)];
-//   }
-//   return arr.includes(r) ? makeId(arr) : r;
-// }
