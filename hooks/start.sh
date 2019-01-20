@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/usr/bin/systemctl start issues-discord-bot
+systemctl start issues-discord-bot
